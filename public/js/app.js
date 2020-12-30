@@ -23,6 +23,11 @@ class TimersDashboard extends React.Component {
   handleCreateFormSubmit = (timer) => {
     this.createTimer(timer);
   }
+
+  handleEditFormSubmit = (attrs) => {
+    this.updateTimer(attrs);
+  };  
+
   createTimer = (timer) => {
     const t = helpers.newTimer(timer);
     this.setState({
@@ -30,12 +35,27 @@ class TimersDashboard extends React.Component {
     });
   };
 
+  updateTimer = (attrs) => {
+    this.setState({
+      timers: this.state.timers.map((timer) => {
+        if(timer.id === attrs.id){
+          return Object.assign({}, timer, {
+            title: attrs.title,
+            project: attrs.project,
+          });
+        } else {
+          return timer;
+        }
+      })
+    })
+  }
     render() {
       return (
         <div className='ui three column centered grid'>
           <div className='column'>
             <EditableTimerList 
               timers={this.state.timers}
+              onFormSubmit={this.handleEditFormSubmit}
             />
             <ToggleableTimerForm
               onFormSubmit={this.handleCreateFormSubmit}
@@ -94,6 +114,7 @@ class TimersDashboard extends React.Component {
           project={timer.project}
           elapsed={timer.elapsed}
           runningSince={timer.runningSince}
+          onFormSubmit={this.props.onFormSubmit}
         />
       ))
       return (
@@ -108,6 +129,27 @@ class TimersDashboard extends React.Component {
     state = {
       editFormOpen: false,
     };
+    hanleEditClick = () => {
+      this.openForm();
+    };
+
+    handleFormClose = () => {
+      this.closeForm();
+    };
+
+    handleSubmit = (timer) => {
+      this.props.onFormSubmit(timer);
+      this.closeForm();
+    };
+
+    closeForm = () =>{
+      this.setState({editFormOpen: false});
+    };
+
+    openForm = () => {
+      this.setState({editFormOpen: true});
+    }
+
     render() {
       if (this.props.editFormOpen) {
         return (
@@ -115,6 +157,8 @@ class TimersDashboard extends React.Component {
             id={this.props.id}
             title={this.props.title}
             project={this.props.project}
+            onFormSubmit={this.handleSubmit}
+            onFormClose={this.handleFormClose}
           />
         );
       } else {
@@ -125,6 +169,7 @@ class TimersDashboard extends React.Component {
             project={this.props.project}
             elapsed={this.props.elapsed}
             runningSince={this.props.runningSince}
+            onEditClick={this.handleFormClose}
           />
         );
       }
@@ -149,7 +194,9 @@ class TimersDashboard extends React.Component {
               </h2>
             </div>
             <div className='extra content'>
-              <span className='right floated edit icon'>
+              <span className='right floated edit icon'
+                 onClick={this.props.onEditClick}
+                 >
                 <i className='edit icon' />
               </span>
               <span className='right floated trash icon'>
